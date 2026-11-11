@@ -47,13 +47,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Configurar el Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Aceptar licencias y preparar plataforma Android 35
+      - name: Preparar el Android SDK (ya viene en el runner)
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0" > /dev/null
+          SDKM=$(command -v sdkmanager || true)
+          [ -z "$SDKM" ] && SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKM" ] || SDKM=$(find "$ANDROID_HOME" "$ANDROID_SDK_ROOT" /usr/local/lib/android/sdk -name sdkmanager -type f 2>/dev/null | head -n 1)
+          echo "sdkmanager: $SDKM"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_HOME=$ANDROID_HOME"
 
       - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
